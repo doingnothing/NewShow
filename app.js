@@ -3,9 +3,8 @@ var express = require('express');
 var app = express();
 
 // 静态
-app.use('/public', express.static('public'));
 
-app.use('/api', require('./router'));
+app.use(require('./router'));
 
 app.use(function (err, req, res, next) {
     res.send({

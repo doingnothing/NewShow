@@ -8,12 +8,12 @@
 </head>
 <body id="app">
 <div class="detail">
-    <img class="photo" v-if="photo.filename" :src="'/public/upload/' + photo.filename">
+    <img class="photo" v-if="photo.filename" :src="'upload/' + photo.filename">
     <br>
     <p>
         <span>{{ photo.name }}</span>
         <span class="right">
-            <a class="btn btn-primary" :href="'/public/upload/' + photo.filename"
+            <a class="btn btn-primary" :href="'upload/' + photo.filename"
                :download="photo.name + '.' + photo.type">下载原图（{{ photo.size | formatSize }}）</a>
             &nbsp;&nbsp;
             <a class="btn btn-primary" href="#comment">
@@ -98,7 +98,7 @@
                 return res;
             })();
             if (querys.id) {
-                $.getJSON('/api/photo/' + querys.id)
+                $.getJSON('/newshow/api/photo/' + querys.id)
                         .done(function (data) {
                             vm.photo = data.data;
                         });

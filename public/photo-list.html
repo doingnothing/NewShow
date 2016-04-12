@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="libs/bootstrap/css/bootstrap.min.css">
+</head>
+<body id="app">
+<div class="thumbnail-list">
+    <a class="thumbnail" v-for="photo in newPhotos" :href="'/public/photo.html?id=' + photo._id">
+        <img :src="photo.src" :alt="photo.name">
+        <p>{{ photo.name }}</p>
+    </a>
+    <a class="thumbnail" v-for="photo in photos" :href="'/public/photo.html?id=' + photo._id">
+        <img :src="'/public/upload/thumbnail/' + photo.filename" :alt="photo.name">
+        <p>{{ photo.name }}</p>
+    </a>
+    <br><br>
+    <p><a v-if="more" @click="getMore" class="more text-primary">更多</a></p>
+    <br><br>
+</div>
+
+<div class="upload panel my-panel" :class="{'my-show': show}">
+    <span title="上传图片" @click="toShow" class="my-btn glyphicon"
+          :class="show ? 'glyphicon-chevron-down' : 'glyphicon-chevron-up'"></span>
+
+    <div class="header">
+        <h3 class="title text-primary">秀出你的美照</h3>
+        <br>
+        <p class="text-right">
+            <a class="btn btn-primary add-btn">
+                添加
+                <input id="file" accept="image/*" multiple @change="add($event)" type="file">
+            </a>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a @click="clear" class="btn btn-danger">清除</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a @click="upload" class="btn btn-primary upload-btn">{{ uploading ? '上传中' : '开始上传' }}</a>
+        </p>
+    </div>
+    <br>
+    <div class="photo-list">
+        <h4 class="text-info">等待上传</h4>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>预览</th>
+                <th>名称</th>
+                <th>大小</th>
+                <th>进度</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="photo in uploadingPhotos">
+                <td><img class="photo" :src="photo.src"></td>
+                <td><input class="name" v-model="photo.name"></td>
+                <td>{{ photo.size | formatSize }}</td>
+                <td>
+                    <progress class="progress" :value="photo.progress + 5" max="105"></progress>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div class="photo-list">
+        <h4 class="text-info">已上传</h4>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>预览</th>
+                <th>名称</th>
+                <th>大小</th>
+                <th>进度</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="photo in uploadedPhotos">
+                <td><img class="photo" :src="photo.src"></td>
+                <td>{{ photo.name }}</td>
+                <td>{{ photo.size | formatSize }}</td>
+                <td>
+                    <progress class="progress" :value="photo.progress + 5" max="105"></progress>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div class="footer">
+        <p class="status">
+            已上传：{{ uploadedPhotos.length }}
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            剩余：{{ uploadingPhotos.length }}
+        </p>
+    </div>
+</div>
+<script src="libs/jquery/jquery.min.js"></script>
+<script src="libs/vue/vue.min.js"></script>
+<script src="main.js"></script>
+<script>
+    $(window).resize(function () {
+        // 上传面板响应窗口的变化
+        var height = $(window).height();
+        var width = $(window).width();
+        $('.my-show').css({
+            width: (width < 800 ? width : 800) + 'px',
+            height: (height < 600 ? height : 600) + 'px',
+            top: 'calc(100% - ' + (height < 600 ? height : 600) + 'px)'
+        });
+    });
+
+    Vue.filter('formatSize', function (size) {
+        size = Number(size);
+        var res = '';
+        if (size > 1000000) {
+            res = (size / 1000000).toFixed(1) + 'M';
+        } else if (size > 1000) {
+            res = (size / 1000).toFixed(1) + 'KB';
+        } else {
+            res = size + 'b';
+        }
+        return res;
+    });
+
+    var getMore = function () {
+        var vm = this;
+        if (vm.loading) {
+            return;
+        }
+        vm.loading = true;
+        $.getJSON('/api/photos', {
+            page: vm.page
+        }).done(function (data) {
+            vm.photos = vm.photos.concat(data.data);
+            vm.page += 1;
+            vm.loading = false;
+            if (data.data.length < 20) {
+                vm.more = false;
+            }
+        });
+    };
+
+    var vm = new Vue({
+        init: getMore,
+        el: '#app',
+        data: {
+            page: 1,
+            loading: false,
+            more: true,
+            uploading: false,
+            photos: [],
+            newPhotos: [],
+            uploadingPhotos: [],
+            uploadedPhotos: [],
+            show: false
+        },
+        methods: {
+            getMore: getMore,
+            toShow: function () {
+                // 显示或隐藏上传面板
+                var vm = this;
+                vm.show = !vm.show;
+                if (vm.show) {
+                    var height = $(window).height();
+                    var width = $(window).width();
+                    $('.my-panel').css({
+                        width: (width < 800 ? width : 800) + 'px',
+                        height: (height < 600 ? height : 600) + 'px',
+                        top: 'calc(100% - ' + (height < 600 ? height : 600) + 'px)'
+                    });
+                } else {
+                    $('.my-panel').css({
+                        top: '100%'
+                    })
+                }
+            },
+            clear: function () {
+                var vm = this;
+                vm.uploadingPhotos = [];
+                vm.uploadedPhotos = [];
+            },
+            add: function (event) {
+                var vm = this;
+
+                var target = event.target;
+                var max = target.files && target.files.length;
+                if (!max && max <= 0) {
+                    return;
+                }
+
+                for (var i = 0; i < max; i = i + 1) {
+                    addFile(vm, target.files[i]);
+                }
+                target.value = '';
+            },
+            upload: function () {
+                var vm = this;
+                var uploadingPhotos = vm.uploadingPhotos;
+                var uploadedPhotos = vm.uploadedPhotos;
+
+                if (vm.uploading) {
+                    return;
+                }
+                var uploaded = 0;
+                var max = uploadingPhotos.length;
+                if (max === 0) {
+                    return;
+                }
+                vm.uploading = true;
+
+                uploadingPhotos.map(function (fileData) {
+                    uploadFile(fileData, function (data) {
+                        uploaded += 1;
+                        if (uploaded >= max) {
+                            vm.uploading = false;
+                        }
+                        var index = uploadingPhotos.indexOf(fileData);
+                        if (index === -1) {
+                            return;
+                        }
+                        var photo = uploadingPhotos.splice(index, 1)[0];
+                        photo._id = data._id;
+                        uploadedPhotos.push(photo);
+                        vm.newPhotos = [photo].concat(vm.newPhotos);
+                    });
+                });
+            }
+        }
+    });
+</script>
+</body>
+</html>

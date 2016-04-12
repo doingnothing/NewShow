@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="libs/bootstrap/css/bootstrap.min.css">
+</head>
+<body id="app">
+<div class="detail">
+    <img class="photo" v-if="photo.filename" :src="'/public/upload/' + photo.filename">
+    <br>
+    <p>
+        <span>{{ photo.name }}</span>
+        <span class="right">
+            <a class="btn btn-primary" :href="'/public/upload/' + photo.filename"
+               :download="photo.name + '.' + photo.type">下载原图（{{ photo.size | formatSize }}）</a>
+            &nbsp;&nbsp;
+            <a class="btn btn-primary" href="#comment">
+                评论
+                <span class="badge">{{ comments.length }}</span>
+            </a>
+            &nbsp;&nbsp;
+            <a @click="like" class="btn btn-primary">
+                喜欢
+                <span class="badge">{{ like_count }}</span>
+            </a>
+        </span>
+    </p>
+    <br>
+    <p>
+        上传者：<span class="text-primary">牛牛</span>
+    </p>
+    <br id="comment">
+    <p v-for="one in comments">
+        <span class="text-primary">{{ one.user_name }}说（{{ one.date }}）：</span>
+        <span>{{ one.content }}</span>
+    </p>
+    <br>
+    <textarea v-model="content" placeholder="我要评论"></textarea>
+    <br>
+    <p class="text-right"><a @click="comment" class="btn btn-primary">提交评论</a></p>
+</div>
+<script src="libs/jquery/jquery.min.js"></script>
+<script src="libs/vue/vue.min.js"></script>
+<script>
+    var comments = [
+        {
+            user_name: '牛牛',
+            content: '拍的很棒！',
+            date: new Date().toLocaleString()
+        },
+        {
+            user_name: '狼仔',
+            content: '你不怕我吗！',
+            date: new Date().toLocaleString()
+        },
+        {
+            user_name: '企鹅',
+            content: '我可是会飞哦，我到过你拍的这个地方。@牛牛！',
+            date: new Date().toLocaleString()
+        },
+        {
+            user_name: '钉子',
+            content: '做的累死啦！',
+            date: new Date().toLocaleString()
+        }
+    ];
+    var temp = localStorage.getItem('comments');
+    if (temp) {
+        comments = JSON.parse(temp);
+    }
+    Vue.filter('formatSize', function (size) {
+        size = Number(size);
+        var res = '';
+        if (size > 1000000) {
+            res = (size / 1000000).toFixed(1) + 'M';
+        } else if (size > 1000) {
+            res = (size / 1000).toFixed(1) + 'KB';
+        } else {
+            res = size + 'b';
+        }
+        return res;
+    });
+    new Vue({
+        init: function () {
+            var vm = this;
+            var querys = (function () {
+
+                var search = location.search.slice(1);
+
+                var items = search.split('&');
+                var res = {};
+                items.map(function (ele) {
+                    var item = ele.split('=');
+                    res[item[0]] = item[1];
+                });
+                return res;
+            })();
+            if (querys.id) {
+                $.getJSON('/api/photo/' + querys.id)
+                        .done(function (data) {
+                            vm.photo = data.data;
+                        });
+            }
+        },
+        el: '#app',
+        data: {
+            like_count: 25,
+            photo: {},
+            comments: comments
+        },
+        methods: {
+            like: function () {
+                this.like_count += 1;
+            },
+            comment: function () {
+                var vm = this;
+                vm.comments.push({
+                    user_name: '小芬',
+                    content: vm.content,
+                    date: new Date().toLocaleString()
+                });
+                vm.content = '';
+                localStorage.setItem('comments', JSON.stringify(vm.comments));
+            }
+        }
+    })
+</script>
+</body>
+</html>

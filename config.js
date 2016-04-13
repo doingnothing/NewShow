@@ -1,6 +1,6 @@
 var config = {
     port: 8080,
-    uploadDir: 'NewShow/public/upload',
+    uploadDir: 'public/upload',
     db: 'mongodb://localhost/newshow',
     photo_list_limit: 20
 };

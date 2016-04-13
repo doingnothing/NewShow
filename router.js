@@ -31,17 +31,9 @@ var verifyId = function (req, res, next) {
     next();
 };
 
-apiRouter.use(function (req, res, next) {
-    var path = req.path;
-    if (path.indexOf('/public') == 0) {
-        return res.sendFile(__dirname + req.path);
-    }
-    next();
-});
-
 var im = require('imagemagick');
 var Photo = models.Photo;
-apiRouter.post('/api/upload', single, function (req, res, next) {
+apiRouter.post('/upload', single, function (req, res, next) {
     var file = req.file;
     var body = req.body;
 
@@ -62,9 +54,10 @@ apiRouter.post('/api/upload', single, function (req, res, next) {
         })
     });
 
+    // 生成缩略图
     im.resize({
-        srcPath: 'NewShow/public/upload/' + file.filename,
-        dstPath: 'NewShow/public/upload/thumbnail/' + file.filename,
+        srcPath: 'public/upload/' + file.filename,
+        dstPath: 'public/upload/thumbnail/' + file.filename,
         width:   200,
         format: 'jpg'
     }, function (err) {
@@ -74,7 +67,7 @@ apiRouter.post('/api/upload', single, function (req, res, next) {
 
     });
 });
-apiRouter.get('/api/photos', function (req, res, next) {
+apiRouter.get('/photos', function (req, res, next) {
     var query = req.query;
     Photo.getPhotos(query && query.page || 1, function (err, os) {
         if (err) {
@@ -86,7 +79,7 @@ apiRouter.get('/api/photos', function (req, res, next) {
         })
     })
 });
-apiRouter.get('/api/photo/:id', verifyId, function (req, res, next) {
+apiRouter.get('/photo/:id', verifyId, function (req, res, next) {
     var params = req.params;
 
     Photo.getPhoto(params.id, function (err, o) {

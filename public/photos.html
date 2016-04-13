@@ -114,7 +114,7 @@
             fileData.progress = progress;
             load(data.data);
         });
-        xhr.open('post', '/newshow/api/upload');
+        xhr.open('post', '/api/upload');
         var fd = new FormData;
         fd.append('photo', fileData.file);
         fd.append('size', fileData.size);
@@ -186,7 +186,7 @@
             return;
         }
         vm.loading = true;
-        $.getJSON('/newshow/api/photos', {
+        $.getJSON('/api/photos', {
             page: vm.page
         }).done(function (data) {
             vm.photos = vm.photos.concat(data.data);

@@ -57,7 +57,7 @@
         },
         {
             user_name: '企鹅',
-            content: '我可是会飞哦，我到过你拍的这个地方。@牛牛！',
+            content: '连猪都会飞，我必须得飞啊！@牛牛！',
             date: new Date().toLocaleString()
         },
         {
@@ -98,7 +98,7 @@
                 return res;
             })();
             if (querys.id) {
-                $.getJSON('/newshow/api/photo/' + querys.id)
+                $.getJSON('/api/photo/' + querys.id)
                         .done(function (data) {
                             vm.photo = data.data;
                         });

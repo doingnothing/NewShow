@@ -29,14 +29,14 @@
         <h3 class="title text-primary">秀出你的美照</h3>
         <br>
         <p class="text-right">
-            <a class="btn btn-primary add-btn">
+            <a class="btn btn-primary add-btn" :class="{disabled: uploading}">
                 添加
                 <input id="file" accept="image/*" multiple @change="add($event)" type="file">
             </a>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <a @click="clear" class="btn btn-danger">清除</a>
+            <a @click="clear" class="btn btn-danger" :class="{disabled: uploading}">清除</a>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <a @click="upload" class="btn btn-primary upload-btn">{{ uploading ? '上传中' : '开始上传' }}</a>
+            <a @click="upload" class="btn btn-primary upload-btn" :class="{disabled: uploading}">{{ uploading ? '上传中' : '开始上传' }}</a>
         </p>
     </div>
     <br>
@@ -234,11 +234,18 @@
             },
             clear: function () {
                 var vm = this;
+                if (vm.uploading) {
+                    return;
+                }
                 vm.uploadingPhotos = [];
                 vm.uploadedPhotos = [];
             },
             add: function (event) {
                 var vm = this;
+
+                if (vm.uploading) {
+                    return;
+                }
 
                 var target = event.target;
                 var max = target.files && target.files.length;

@@ -57,7 +57,7 @@
                 <td><input class="name" v-model="photo.name"></td>
                 <td>{{ photo.size | formatSize }}</td>
                 <td>
-                    <progress class="progress" :value="photo.progress + 5" max="105"></progress>
+                    <progress class="my-progress" :value="photo.progress + 5" max="105"></progress>
                 </td>
             </tr>
             </tbody>
@@ -81,7 +81,7 @@
                 <td>{{ photo.name }}</td>
                 <td>{{ photo.size | formatSize }}</td>
                 <td>
-                    <progress class="progress" :value="photo.progress + 5" max="105"></progress>
+                    <progress class="my-progress" :value="photo.progress + 5" max="105"></progress>
                 </td>
             </tr>
             </tbody>

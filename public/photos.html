@@ -103,9 +103,12 @@
         var progress = 0;
         var xhr = new XMLHttpRequest();
         xhr.upload.addEventListener('progress', function (e) {
-            if (e.lengthComputable && progress < 100) {
-                progress = parseFloat((e.loaded / e.total * 100).toFixed(0));
-                fileData.progress = progress;
+            if (e.lengthComputable && progress < 95) {
+                var progress1 = parseFloat((e.loaded / e.total * 95).toFixed(0));
+                if (progress < progress1) {
+                    progress = progress1;
+                    fileData.progress = progress;
+                }
             }
         });
         xhr.addEventListener('load', function (e) {
